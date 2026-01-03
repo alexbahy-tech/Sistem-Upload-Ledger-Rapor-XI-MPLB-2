@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Admin TK2 2025</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            /* PERUBAHAN WARNA BACKGROUND DISINI */
+            /* Gradasi Biru Laut -> Tosca -> Kuning Lembut */
+            background: linear-gradient(135deg, #2193b0 0%, #6dd5ed 40%, #b6fbff 70%, #f6d365 100%);
+            background-attachment: fixed; /* Agar background tetap diam saat scroll */
+            min-height: 100vh;
+        }
+        .glass {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+            border-radius: 20px;
+        }
+        .stat-card {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        /* Efek hover yang lebih halus */
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+            transition: all 0.6s;
+            opacity: 0;
+        }
+        .stat-card:hover::before {
+            opacity: 1;
+            transform: translate(-25%, -25%);
+        }
+        .stat-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.15);
+        }
+        .semester-tab {
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        /* Update warna tab aktif agar sesuai tema */
+        .semester-tab.active {
+            background: linear-gradient(135deg, #2193b0 0%, #6dd5ed 100%);
+            color: white;
+            border-color: transparent;
+        }
+        .semester-tab:not(.active):hover {
+            background: rgba(109, 213, 237, 0.15);
+            color: #2193b0;
+            border-color: #6dd5ed;
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, #1c7c94 0%, #20bd9d 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .student-card {
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        .student-card:hover {
+            border-color: rgba(33, 147, 176, 0.4);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+        .nav-glass {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.05);
+        }
+        .modal-overlay {
+            backdrop-filter: blur(8px);
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .modal-content {
+            animation: slideUp 0.3s ease;
+        }
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .pulse-ring {
+            animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse-ring {
+            0% { box-shadow: 0 0 0 0 rgba(33, 147, 176, 0.4); }
+            100% { box-shadow: 0 0 0 20px rgba(33, 147, 176, 0); }
+        }
+    </style>
+</head>
+<body class="pb-20">
+    <script>
+        // GANTI URL INI DENGAN URL DEPLOYMENT GOOGLE APPS SCRIPT ANDA
+        const APP_URL = "https://script.google.com/macros/s/AKfycbw-rDPNoLwkqQvxtKlVIDZ3oWtYIL2u2FUV8eoQXEMP8zwnDBcb4dbLheu0wuTooqju/exec";
+
+        const academicYears = ['2024/2025', '2025/2026', '2026/2027'];
+        const semesters = [
+            { id: 'ganjil', name: 'Semester Ganjil', icon: '1️⃣ ' },
+            { id: 'genap', name: 'Semester Genap', icon: '2️⃣ ' }
+        ];
+
+        let currentYear = '2025/2026';
+        let currentSemester = 'ganjil';
+    </script>
+    
+    <nav class="nav-glass sticky top-0 z-50 border-b border-slate-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <div class="flex items-center gap-4">
+                    <div class="bg-gradient-to-br from-cyan-500 to-blue-600 text-white w-14 h-14 rounded-2xl flex items-center justify-center font-bold shadow-xl shadow-cyan-200 pulse-ring">
+                        <i class="fa-solid fa-graduation-cap text-2xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-2xl gradient-text leading-tight">Admin XIMPLB</h1>
+                        <h2 class="font-bold text-1xl gradient-text leading-tight">R.A. Ririhena, S.MG</h2>
+                        <p class="text-xs text-slate-500 font-semibold tracking-wider">MANAGEMENT DASHBOARD</p>
+                    </div>
+                </div>
+                
+                <div class="flex gap-3">
+                    <button onclick="triggerUploadLedger()" class="bg-gradient-to-r from-emerald-400 to-teal-500 text-white hover:from-emerald-500 hover:to-teal-600 px-5 py-3 rounded-xl text-sm font-bold transition shadow-lg shadow-emerald-100 flex items-center gap-2">
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                        <span class="hidden sm:inline">Upload Ledger</span>
+                    </button>
+                    <button onclick="openAddModal()" class="bg-gradient-to-r from-blue-400 to-cyan-500 hover:from-blue-500 hover:to-cyan-600 text-white px-5 py-3 rounded-xl text-sm font-bold transition shadow-lg shadow-blue-100 flex items-center gap-2">
+                        <i class="fa-solid fa-user-plus"></i>
+                        <span class="hidden sm:inline">Tambah Siswa</span>
+                    </button>
+
+                    <a href="https://alexbahy-tech.github.io/Portal-ledger-Rapor-Semester-Ganjil-2025-2026/" 
+                       class="bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white px-5 py-3 rounded-xl text-sm font-bold transition shadow-lg shadow-red-200 flex items-center gap-2">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                        <span class="hidden sm:inline">Keluar</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <div class="glass p-6 mb-8">
+            <div class="flex flex-col lg:flex-row gap-6">
+                <div class="flex-1">
+                    <label class="block text-sm font-bold text-slate-700 mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-calendar-days text-cyan-600"></i>
+                        Tahun Pelajaran
+                    </label>
+                    <div class="grid grid-cols-3 gap-3" id="yearTabs"></div>
+                </div>
+
+                <div class="flex-1">
+                    <label class="block text-sm font-bold text-slate-700 mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-book-open text-blue-600"></i>
+                        Semester
+                    </label>
+                    <div class="grid grid-cols-2 gap-3" id="semesterTabs"></div>
+                </div>
+            </div>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+
+            <div class="stat-card bg-gradient-to-br from-blue-400 to-blue-600 rounded-2xl p-6 text-white shadow-xl shadow-blue-200">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <p class="text-blue-50 text-xs font-bold uppercase tracking-wide">Total Siswa</p>
+                        <h2 class="text-4xl font-extrabold mt-2" id="statTotal">0</h2>
+                        <p class="text-xs text-blue-100 mt-1"><i class="fa-solid fa-users mr-1"></i>Data Terdaftar</p>
+                    </div>
+                    <div class="bg-white/20 backdrop-blur-sm p-3 rounded-xl">
+                        <i class="fa-solid fa-users text-2xl"></i>
+                    </div>
+                </div>
+                <div class="h-1 bg-white/20 rounded-full overflow-hidden">
+                    <div class="h-full bg-white rounded-full w-full"></div>
+                </div>
+            </div>
+            <div onclick="showLedgerFiles()" class="stat-card cursor-pointer bg-gradient-to-br from-yellow-400 to-orange-400 rounded-2xl p-6 text-white shadow-xl shadow-yellow-200 group">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <p class="text-yellow-50 text-xs font-bold uppercase tracking-wide group-hover:underline">File Ledger</p>
+                        <h2 class="text-4xl font-extrabold mt-2" id="statLedger">0</h2>
+                        <p class="text-xs text-yellow-100 mt-1"><i class="fa-solid fa-download mr-1"></i>Klik untuk Unduh</p>
+                    </div>
+                    <div class="bg-white/20 backdrop-blur-sm p-3 rounded-xl">
+                        <i class="fa-solid fa-file-invoice-dollar text-2xl"></i>
+                    </div>
+                </div>
+                <div class="h-1 bg-white/20 rounded-full overflow-hidden">
+                    <div class="h-full bg-white rounded-full w-3/4"></div>
+                </div>
+            </div>
+            <div class="stat-card glass p-6 shadow-xl border-2 border-emerald-50">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <p class="text-slate-600 text-xs font-bold uppercase tracking-wide">Identitas Lengkap</p>
+                        <h2 class="text-4xl font-extrabold mt-2 text-emerald-500" id="statIdentitas">0</h2>
+                        <p class="text-xs text-slate-500 mt-1"><i class="fa-solid fa-chart-line mr-1"></i><span id="percentIdentitas">0%</span> Terisi</p>
+                    </div>
+                    <div class="bg-emerald-100 text-emerald-600 p-3 rounded-xl">
+                        <i class="fa-solid fa-id-card text-2xl"></i>
+                    </div>
+                </div>
+                <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+                    <div id="barIdentitas" class="h-full bg-gradient-to-r from-emerald-400 to-emerald-600 rounded-full w-0 transition-all duration-1000"></div>
+                </div>
+            </div>
+            <div class="stat-card glass p-6 shadow-xl border-2 border-cyan-50">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <p class="text-slate-600 text-xs font-bold uppercase tracking-wide">Rapor Lengkap</p>
+                        <h2 class="text-4xl font-extrabold mt-2 text-cyan-600" id="statRapor">0</h2>
+                        <p class="text-xs text-slate-500 mt-1"><i class="fa-solid fa-chart-line mr-1"></i><span id="percentRapor">0%</span> Terisi</p>
+                    </div>
+                    <div class="bg-cyan-100 text-cyan-600 p-3 rounded-xl">
+                        <i class="fa-solid fa-file-lines text-2xl"></i>
+                    </div>
+                </div>
+                <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+                    <div id="barRapor" class="h-full bg-gradient-to-r from-cyan-400 to-cyan-600 rounded-full w-0 transition-all duration-1000"></div>
+                </div>
+            </div>
+        </div>
+        <div class="glass p-5 mb-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="relative w-full sm:w-96">
+                <input type="text" id="search" placeholder=" 🔍  Cari nama siswa atau NIS..."
+                    class="w-full pl-12 pr-4 py-3 rounded-xl border-2 border-slate-200 focus:border-cyan-400 focus:ring-4 focus:ring-cyan-100 outline-none text-sm font-medium transition"
+                    onkeyup="filterStudents()">
+                <i class="fa-solid fa-magnifying-glass absolute left-4 top-4 text-slate-400 text-lg"></i>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="loadData()" class="bg-white border-2 border-slate-200 text-slate-600 hover:border-cyan-400 hover:text-cyan-600 px-5 py-3 rounded-xl text-sm font-bold transition flex items-center gap-2 shadow-sm">
+                    <i class="fa-solid fa-arrows-rotate"></i> Refresh
+                </button>
+            </div>
+        </div>
+        <div id="loader" class="text-center py-32">
+            <div class="inline-block p-6 rounded-2xl glass">
+                <i class="fa-solid fa-circle-notch fa-spin text-5xl text-cyan-500 mb-4"></i>
+                <p class="text-slate-600 font-bold text-lg">Memuat data siswa...</p>
+                <p class="text-slate-400 text-sm mt-1">Mohon tunggu sebentar</p>
+            </div>
+        </div>
+        <div id="grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 hidden"></div>
+        <div id="emptyState" class="hidden text-center py-20">
+            <div class="glass p-12 inline-block">
+                <i class="fa-solid fa-inbox text-6xl text-slate-300 mb-4"></i>
+                <p class="text-slate-500 text-lg font-semibold">Belum ada data siswa</p>
+                <p class="text-slate-400 text-sm mt-2">Klik tombol "Tambah Siswa" untuk memulai</p>
+            </div>
+        </div>
+    </main>
+    <input type="file" id="fileInput" class="hidden" accept=".pdf, .xls, .xlsx, .csv">
+    <div id="modalLedger" class="fixed inset-0 bg-slate-900/40 z-[70] hidden flex items-center justify-center p-4 modal-overlay">
+        <div class="glass w-full max-w-2xl p-8 shadow-2xl modal-content border border-white">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="font-bold text-2xl gradient-text flex items-center gap-3">
+                    <i class="fa-solid fa-folder-open text-yellow-500"></i>
+                    File Ledger
+                </h3>
+                <button onclick="document.getElementById('modalLedger').classList.add('hidden')" class="w-10 h-10 rounded-xl hover:bg-slate-100 flex items-center justify-center transition text-slate-400 hover:text-slate-600">
+                    <i class="fa-solid fa-times text-xl"></i>
+                </button>
+            </div>
+            <div id="ledgerList" class="space-y-3 max-h-96 overflow-y-auto pr-2 custom-scrollbar">
+                <p class="text-center text-slate-400 py-8">Memuat file...</p>
+            </div>
+        </div>
+    </div>
+    <div id="modalAdd" class="fixed inset-0 bg-slate-900/40 z-[70] hidden flex items-center justify-center p-4 modal-overlay">
+        <div class="glass w-full max-w-md p-8 shadow-2xl modal-content border border-white">
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-gradient-to-br from-blue-400 to-cyan-500 rounded-2xl mx-auto flex items-center justify-center mb-4 shadow-lg shadow-blue-200">
+                    <i class="fa-solid fa-user-plus text-white text-2xl"></i>
+                </div>
+                <h3 class="font-bold text-2xl gradient-text">Tambah Siswa Baru</h3>
+                <p class="text-slate-500 text-sm mt-2">Lengkapi data siswa di bawah ini</p>
+            </div>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-2">Nama Lengkap</label>
+                    <input type="text" id="newNama" placeholder="Masukkan nama lengkap" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm focus:border-cyan-400 focus:ring-4 focus:ring-cyan-100 outline-none transition bg-white/50">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-2">NIS</label>
+                    <input type="number" id="newNis" placeholder="Nomor Induk Siswa" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm focus:border-cyan-400 focus:ring-4 focus:ring-cyan-100 outline-none transition bg-white/50">
+                </div>
+            </div>
+            <div class="flex gap-3 mt-8">
+                <button onclick="closeAddModal()" class="flex-1 px-5 py-3 text-slate-600 hover:bg-slate-100 rounded-xl font-bold transition border-2 border-slate-200 bg-white">
+                    Batal
+                </button>
+                <button onclick="addStudent()" class="flex-1 px-5 py-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-xl hover:from-blue-600 hover:to-cyan-600 font-bold transition shadow-lg shadow-blue-200">
+                    Simpan
+                </button>
+            </div>
+        </div>
+    </div>
+    <div id="modalUploadSemester" class="fixed inset-0 bg-slate-900/40 z-[70] hidden flex items-center justify-center p-4 modal-overlay">
+        <div class="glass w-full max-w-lg p-8 shadow-2xl modal-content border border-white">
+            <h3 class="font-bold text-2xl gradient-text mb-6 flex items-center gap-3">
+                <i class="fa-solid fa-cloud-arrow-up text-cyan-500"></i>
+                Upload Dokumen
+            </h3>
+
+            <div class="space-y-5">
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-3">Pilih Tahun Pelajaran</label>
+                    <select id="uploadYear" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-cyan-400 focus:ring-4 focus:ring-cyan-100 outline-none font-semibold bg-white/80"></select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-3">Pilih Semester</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button onclick="selectUploadSemester('ganjil')" class="upload-sem-btn px-4 py-3 border-2 border-slate-200 rounded-xl hover:border-cyan-400 transition font-semibold bg-white/50" data-sem="ganjil">
+                            1️⃣  Ganjil
+                        </button>
+                        <button onclick="selectUploadSemester('genap')" class="upload-sem-btn px-4 py-3 border-2 border-slate-200 rounded-xl hover:border-cyan-400 transition font-semibold bg-white/50" data-sem="genap">
+                            2️⃣  Genap
+                        </button>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-3">Nama File</label>
+                    <input type="text" id="uploadFileName" placeholder="Contoh: rapor_semester1.pdf" class="w-full px-4 py-3 border-2 border-slate-200 rounded-xl focus:border-cyan-400 focus:ring-4 focus:ring-cyan-100 outline-none bg-white/50">
+                    <p class="text-xs text-slate-500 mt-2">*Otomatis disarankan</p>
+                </div>
+            </div>
+            <div class="flex gap-3 mt-8">
+                <button onclick="closeUploadModal()" class="flex-1 px-5 py-3 text-slate-600 hover:bg-slate-100 rounded-xl font-bold transition border-2 border-slate-200 bg-white">
+                    Batal
+                </button>
+                <button onclick="confirmUpload()" class="flex-1 px-5 py-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-xl hover:from-blue-600 hover:to-cyan-600 font-bold transition shadow-lg shadow-blue-200">
+                    Upload
+                </button>
+            </div>
+        </div>
+    </div>
+    <script>
+        let allData = [];
+        let uploadType = '';
+        let currentUploadFolder = "";
+        let currentRow = null;
+        let selectedUploadSemester = 'ganjil';
+        window.onload = function() {
+            initializeYearSemesterTabs();
+            loadData();
+            checkLedgerCount();
+        };
+        function initializeYearSemesterTabs() {
+            const yearContainer = document.getElementById('yearTabs');
+            const semesterContainer = document.getElementById('semesterTabs');
+            const uploadYearSelect = document.getElementById('uploadYear');
+
+            academicYears.forEach(year => {
+                const btn = document.createElement('button');
+                btn.className = `semester-tab px-4 py-3 rounded-xl font-bold text-sm ${year === currentYear ? 'active shadow-lg' : 'bg-white/60 text-slate-600 border-2 border-slate-200'}`;
+                btn.textContent = year;
+                btn.onclick = () => selectYear(year);
+                yearContainer.appendChild(btn);
+
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = year;
+                option.selected = year === currentYear;
+                uploadYearSelect.appendChild(option);
+            });
+
+            semesters.forEach(sem => {
+                const btn = document.createElement('button');
+                btn.className = `semester-tab px-5 py-3 rounded-xl font-bold text-sm ${sem.id === currentSemester ? 'active shadow-lg' : 'bg-white/60 text-slate-600 border-2 border-slate-200'}`;
+                btn.innerHTML = `${sem.icon} ${sem.name}`;
+                btn.onclick = () => selectSemester(sem.id);
+                semesterContainer.appendChild(btn);
+            });
+        }
+        function selectYear(year) {
+            currentYear = year;
+            document.querySelectorAll('#yearTabs button').forEach(btn => {
+                btn.className = btn.textContent === year
+                    ? 'semester-tab active shadow-lg px-4 py-3 rounded-xl font-bold text-sm'
+                    : 'semester-tab bg-white/60 text-slate-600 border-2 border-slate-200 px-4 py-3 rounded-xl font-bold text-sm';
+            });
+            loadData();
+        }
+        function selectSemester(semId) {
+            currentSemester = semId;
+            document.querySelectorAll('#semesterTabs button').forEach((btn, idx) => {
+                const isActive = semesters[idx].id === semId;
+                btn.className = `semester-tab px-5 py-3 rounded-xl font-bold text-sm ${isActive ? 'active shadow-lg' : 'bg-white/60 text-slate-600 border-2 border-slate-200'}`;
+            });
+            loadData();
+        }
+        async function loadData() {
+            if(APP_URL.includes("URL_WEB_APP")) {
+                Swal.fire("Peringatan", "Harap ganti APP_URL di kode Javascript dengan URL Web App Anda!", "warning");
+                document.getElementById('loader').classList.add('hidden');
+                return;
+            }
+
+            document.getElementById('loader').classList.remove('hidden');
+            document.getElementById('grid').classList.add('hidden');
+            document.getElementById('emptyState').classList.add('hidden');
+
+            try {
+                const res = await fetch(APP_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'read',
+                        year: currentYear,
+                        semester: currentSemester
+                    })
+                });
+                const data = await res.json();
+
+                allData = data;
+                updateStats(data);
+
+                if(data.length === 0) {
+                    document.getElementById('loader').classList.add('hidden');
+                    document.getElementById('emptyState').classList.remove('hidden');
+                } else {
+                    renderData(data);
+                    document.getElementById('loader').classList.add('hidden');
+                    document.getElementById('grid').classList.remove('hidden');
+                }
+            } catch (err) {
+                console.error(err);
+                document.getElementById('loader').classList.add('hidden');
+                Swal.fire('Error', 'Gagal memuat data. Periksa koneksi internet atau URL App.', 'error');
+            }
+        }
+        function updateStats(data) {
+            const total = data.length;
+            const identitasCount = data.filter(s => s.hasIdentitas).length;
+            const raporCount = data.filter(s => s.hasRapor).length;
+            document.getElementById('statTotal').innerText = total;
+            document.getElementById('statIdentitas').innerText = identitasCount;
+            document.getElementById('statRapor').innerText = raporCount;
+
+            const percentId = total > 0 ? Math.round((identitasCount/total)*100) : 0;
+            const percentRap = total > 0 ? Math.round((raporCount/total)*100) : 0;
+
+            document.getElementById('percentIdentitas').innerText = percentId + '%';
+            document.getElementById('percentRapor').innerText = percentRap + '%';
+            setTimeout(() => {
+                document.getElementById('barIdentitas').style.width = percentId + "%";
+                document.getElementById('barRapor').style.width = percentRap + "%";
+            }, 300);
+        }
+        async function checkLedgerCount() {
+            try {
+                const res = await fetch(`${APP_URL}?action=checkStatus&folderId=LEDGER`);
+                const result = await res.json();
+                if(result.status === 'success') {
+                    document.getElementById('statLedger').innerText = result.totalFiles;
+                }
+            } catch(e){}
+        }
+        async function showLedgerFiles() {
+            document.getElementById('modalLedger').classList.remove('hidden');
+            const listContainer = document.getElementById('ledgerList');
+            listContainer.innerHTML = `<div class="flex justify-center py-4"><i class="fa-solid fa-circle-notch fa-spin text-cyan-500 text-2xl"></i></div>`;
+            try {
+                const res = await fetch(`${APP_URL}?action=checkStatus&folderId=LEDGER`);
+                const result = await res.json();
+                listContainer.innerHTML = "";
+                if(result.files.length === 0) {
+                    listContainer.innerHTML = `<p class="text-center text-slate-400 py-4">Tidak ada file Ledger.</p>`;
+                    return;
+                }
+                result.files.forEach(f => {
+                    listContainer.innerHTML += `
+                    <div class="flex items-center justify-between p-4 bg-white/50 rounded-xl hover:bg-white transition border border-slate-200">
+                        <div class="flex items-center gap-3 overflow-hidden flex-1">
+                            <div class="w-10 h-10 rounded-lg bg-yellow-100 text-yellow-600 flex items-center justify-center shrink-0"><i class="fa-solid fa-file-excel text-lg"></i></div>
+                            <span class="text-sm font-semibold text-slate-700 truncate">${f.name}</span>
+                        </div>
+                        <a href="${f.url}" target="_blank" class="bg-emerald-50 text-emerald-600 hover:bg-emerald-100 px-3 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 border border-emerald-100">
+                            <i class="fa-solid fa-download"></i> Unduh
+                        </a>
+                    </div>`;
+                });
+            } catch (error) {
+                listContainer.innerHTML = `<div class="text-center py-4 text-red-400">Gagal memuat data ledger</div>`;
+            }
+        }
+        function renderData(data) {
+            const grid = document.getElementById('grid');
+            grid.innerHTML = '';
+            data.forEach((row, index) => {
+                const identitasBadge = row.hasIdentitas
+                    ? `<span class="bg-emerald-100 text-emerald-600 text-xs px-2 py-1 rounded-md font-bold border border-emerald-200"><i class="fa-solid fa-check"></i> Ada</span>`
+                    : `<span class="bg-slate-100 text-slate-500 text-xs px-2 py-1 rounded-md font-bold border border-slate-200">Kosong</span>`;
+                const raporBadge = row.hasRapor
+                    ? `<span class="bg-cyan-100 text-cyan-600 text-xs px-2 py-1 rounded-md font-bold border border-cyan-200"><i class="fa-solid fa-check"></i> Ada</span>`
+                    : `<span class="bg-slate-100 text-slate-500 text-xs px-2 py-1 rounded-md font-bold border border-slate-200">Kosong</span>`;
+                const card = document.createElement('div');
+                card.className = 'student-card glass p-5 rounded-2xl relative group bg-white/60';
+                card.innerHTML = `
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-cyan-500 text-white flex items-center justify-center font-bold text-lg shadow-lg shadow-cyan-100">
+                                ${row.nama.charAt(0).toUpperCase()}
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-slate-800 leading-tight line-clamp-1" title="${row.nama}">${row.nama}</h4>
+                                <p class="text-xs text-slate-500 font-mono mt-0.5">NIS: ${row.nis}</p>
+                            </div>
+                        </div>
+                        <button onclick="deleteStudent(${index})" class="text-slate-300 hover:text-red-500 transition p-2">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+
+                    <div class="space-y-3 mb-5">
+                        <div class="flex justify-between items-center p-2 bg-white/50 rounded-lg border border-slate-100">
+                            <span class="text-xs font-semibold text-slate-600">Identitas</span>
+                            ${identitasBadge}
+                        </div>
+                        <div class="flex justify-between items-center p-2 bg-white/50 rounded-lg border border-slate-100">
+                            <span class="text-xs font-semibold text-slate-600">Rapor (${currentSemester})</span>
+                            ${raporBadge}
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="prepareUpload(${index}, 'identitas')" class="px-3 py-2 text-xs font-bold rounded-xl border border-slate-200 text-slate-600 hover:border-emerald-400 hover:text-emerald-600 transition bg-white">
+                            <i class="fa-solid fa-upload mr-1"></i> Identitas
+                        </button>
+                        <button onclick="prepareUpload(${index}, 'rapor')" class="px-3 py-2 text-xs font-bold rounded-xl bg-slate-50 text-slate-600 hover:bg-cyan-50 hover:text-cyan-600 transition border border-slate-200 hover:border-cyan-300">
+                            <i class="fa-solid fa-file-arrow-up mr-1"></i> Rapor
+                        </button>
+                    </div>
+
+                    ${row.hasRapor ? `
+                    <div class="absolute top-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition duration-300">
+                        <a href="${row.raporLink}" target="_blank" class="w-8 h-8 flex items-center justify-center rounded-full bg-cyan-500 text-white shadow-lg hover:scale-110 transition" title="Lihat Rapor">
+                            <i class="fa-solid fa-eye text-xs"></i>
+                        </a>
+                    </div>` : ''}
+                `;
+                grid.appendChild(card);
+            });
+        }
+        function filterStudents() {
+            const query = document.getElementById('search').value.toLowerCase();
+            const filtered = allData.filter(s => s.nama.toLowerCase().includes(query) || String(s.nis).includes(query));
+            if(filtered.length === 0 && query !== "") {
+                document.getElementById('grid').classList.add('hidden');
+            } else {
+                document.getElementById('grid').classList.remove('hidden');
+                renderData(filtered);
+            }
+        }
+        function openAddModal() { document.getElementById('modalAdd').classList.remove('hidden'); }
+        function closeAddModal() { document.getElementById('modalAdd').classList.add('hidden'); }
+        async function addStudent() {
+            const nama = document.getElementById('newNama').value;
+            const nis = document.getElementById('newNis').value;
+            if(!nama || !nis) return Swal.fire('Gagal', 'Semua kolom wajib diisi!', 'warning');
+
+            closeAddModal();
+            Swal.fire({ title: 'Menyimpan...', didOpen: () => Swal.showLoading() });
+            try {
+                const res = await fetch(APP_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'addStudent', nama, nis })
+                });
+                const result = await res.json();
+                if(result.status === 'success') {
+                    document.getElementById('newNama').value = '';
+                    document.getElementById('newNis').value = '';
+                    await loadData();
+                    Swal.fire('Berhasil', 'Siswa berhasil ditambahkan', 'success');
+                } else {
+                    throw new Error(result.message);
+                }
+            } catch (err) {
+                Swal.fire('Error', 'Gagal: ' + err.message, 'error');
+            }
+        }
+        function deleteStudent(index) {
+            const student = allData[index];
+            Swal.fire({
+                title: 'Hapus Siswa?',
+                text: `Data ${student.nama} akan dihapus permanen!`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                confirmButtonText: 'Ya, Hapus!'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({title: 'Menghapus...', didOpen: () => Swal.showLoading()});
+                    try {
+                        await fetch(APP_URL, {
+                            method: 'POST',
+                            body: JSON.stringify({ action: 'deleteStudent', nis: student.nis })
+                        });
+                        await loadData();
+                        Swal.fire('Terhapus!', 'Data telah dihapus.', 'success');
+                    } catch(e) {
+                        Swal.fire('Gagal', 'Terjadi kesalahan sistem', 'error');
+                    }
+                }
+            });
+        }
+        function triggerUploadLedger() {
+            uploadType = 'ledger';
+            document.getElementById('fileInput').click();
+        }
+        function prepareUpload(index, type) {
+            currentRow = allData[index];
+            uploadType = type;
+            if (type === 'rapor') {
+                document.getElementById('uploadFileName').value = `${currentRow.nama}_Rapor_${currentSemester}`;
+                document.getElementById('uploadYear').value = currentYear;
+                selectUploadSemester(currentSemester);
+                document.getElementById('modalUploadSemester').classList.remove('hidden');
+            } else {
+                Swal.fire({
+                    title: 'Upload Identitas',
+                    text: `Upload file identitas untuk ${currentRow.nama}?`,
+                    showCancelButton: true,
+                    confirmButtonText: 'Pilih File PDF'
+                }).then((result) => {
+                    if(result.isConfirmed) document.getElementById('fileInput').click();
+                });
+            }
+        }
+        function closeUploadModal() { document.getElementById('modalUploadSemester').classList.add('hidden'); }
+        function selectUploadSemester(sem) {
+            selectedUploadSemester = sem;
+            document.querySelectorAll('.upload-sem-btn').forEach(btn => {
+                btn.className = btn.dataset.sem === sem
+                    ? 'upload-sem-btn px-4 py-3 border-2 border-cyan-500 bg-cyan-50 text-cyan-700 rounded-xl transition font-bold shadow-sm'
+                    : 'upload-sem-btn px-4 py-3 border-2 border-slate-200 rounded-xl hover:border-cyan-400 transition font-semibold text-slate-500';
+            });
+        }
+        function confirmUpload() {
+            if(!document.getElementById('uploadFileName').value) return Swal.fire('Error', 'Nama file harus diisi', 'warning');
+            document.getElementById('fileInput').click();
+        }
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            e.target.value = '';
+            closeUploadModal();
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = async function() {
+                const base64Content = reader.result.split(',')[1];
+                const mimeType = reader.result.split(';')[0].split(':')[1];
+                Swal.fire({
+                    title: 'Mengupload...',
+                    html: `Sedang mengunggah <b>${file.name}</b>`,
+                    allowOutsideClick: false,
+                    didOpen: () => Swal.showLoading()
+                });
+                let payload = {
+                    action: 'uploadFile',
+                    fileData: base64Content,
+                    mimeType: mimeType,
+                    type: uploadType
+                };
+                if (uploadType === 'ledger') {
+                    payload.folderId = "LEDGER";
+                    payload.fileName = `LEDGER_${new Date().toISOString().slice(0,10)}_${file.name}`;
+                } else if (uploadType === 'identitas') {
+                    payload.nis = currentRow.nis;
+                    payload.nama = currentRow.nama;
+                    payload.fileName = `Identitas_${currentRow.nama}_${currentRow.nis}`;
+                } else if (uploadType === 'rapor') {
+                    payload.nis = currentRow.nis;
+                    payload.nama = currentRow.nama;
+                    payload.year = document.getElementById('uploadYear').value;
+                    payload.semester = selectedUploadSemester;
+                    payload.fileName = document.getElementById('uploadFileName').value;
+                }
+                try {
+                    const res = await fetch(APP_URL, { method: 'POST', body: JSON.stringify(payload) });
+                    const result = await res.json();
+                    if(result.status === 'success') {
+                        Swal.fire('Berhasil!', 'File berhasil diupload.', 'success');
+                        uploadType === 'ledger' ? checkLedgerCount() : loadData();
+                    } else { throw new Error(result.message); }
+                } catch (err) { Swal.fire('Gagal', 'Terjadi kesalahan saat upload.', 'error'); }
+            };
+        });
+    </script>
+</body>
+</html>
